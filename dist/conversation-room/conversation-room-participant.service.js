@@ -106,8 +106,8 @@ let ConversationRoomParticipantService = class ConversationRoomParticipantServic
                 .getOne();
             if (studentWithUser && roomWithTeacher) {
                 const studentName = `${studentWithUser.fName} ${studentWithUser.lName}`;
-                await this.notificationService.sendRoomEnrollmentNotification(roomId, room.title, studentName, roomWithTeacher.teacher.userId);
-                await this.notificationService.sendPaymentSuccessNotification(studentWithUser.userId, room.price, room.title);
+                await this.notificationService.sendRoomEnrollmentNotification(roomId, room.title, studentName, roomWithTeacher.teacher.id);
+                await this.notificationService.sendPaymentSuccessNotification(studentId, room.price, room.title);
             }
         }
         catch (error) {

@@ -133,12 +133,12 @@ export class ConversationRoomParticipantService {
           roomId,
           room.title,
           studentName,
-          roomWithTeacher.teacher.userId
+          roomWithTeacher.teacher.id
         );
         
         // Send payment success notification to student
         await this.notificationService.sendPaymentSuccessNotification(
-          studentWithUser.userId,
+          studentId,
           room.price,
           room.title
         );

@@ -8,13 +8,31 @@ import { Request } from 'express';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
+  private getUserIdFromToken(req: Request): number {
+    const user = req.user as any;
+    // For students, use studentId to get userId
+    if (user.role === 'Student' && user.studentId) {
+      // We need to get userId from studentId
+      // This will be handled by the service layer
+      return user.id; // Fallback to user.id for now
+    }
+    // For teachers, use teacherId to get userId
+    if (user.role === 'Teacher' && user.teacherId) {
+      // We need to get userId from teacherId
+      // This will be handled by the service layer
+      return user.id; // Fallback to user.id for now
+    }
+    // Fallback to user.id
+    return user.id;
+  }
+
   @Get()
   async getUserNotifications(
     @Req() req: Request,
     @Query('limit') limit?: string,
     @Query('offset') offset?: string
   ) {
-    const userId = (req.user as any).id;
+    const userId = this.getUserIdFromToken(req);
     const limitNum = limit ? parseInt(limit) : 20;
     const offsetNum = offset ? parseInt(offset) : 0;
     
@@ -23,28 +41,28 @@ export class NotificationController {
 
   @Get('unread-count')
   async getUnreadCount(@Req() req: Request) {
-    const userId = (req.user as any).id;
+    const userId = this.getUserIdFromToken(req);
     const count = await this.notificationService.getUnreadCount(userId);
     return { count };
   }
 
   @Post(':id/read')
   async markAsRead(@Param('id') id: string, @Req() req: Request) {
-    const userId = (req.user as any).id;
+    const userId = this.getUserIdFromToken(req);
     await this.notificationService.markAsRead(parseInt(id), userId);
     return { success: true };
   }
 
   @Post('mark-all-read')
   async markAllAsRead(@Req() req: Request) {
-    const userId = (req.user as any).id;
+    const userId = this.getUserIdFromToken(req);
     await this.notificationService.markAllAsRead(userId);
     return { success: true };
   }
 
   @Delete(':id')
   async deleteNotification(@Param('id') id: string, @Req() req: Request) {
-    const userId = (req.user as any).id;
+    const userId = this.getUserIdFromToken(req);
     await this.notificationService.deleteNotification(parseInt(id), userId);
     return { success: true };
   }

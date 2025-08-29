@@ -77,12 +77,13 @@ export class LiveKitService {
           });
           
           if (enrolledStudents.length > 0) {
-            const studentUserIds = enrolledStudents.map(p => p.student.userId);
+            const studentIds = enrolledStudents.map(p => p.student.id);
             await this.notificationService.sendRoomStartingNotification(
               roomId,
               room.title,
               room.startTime,
-              studentUserIds
+              studentIds,
+              room.teacher.id
             );
           }
         } catch (error) {
@@ -221,25 +222,8 @@ export class LiveKitService {
     room.status = ConversationRoomStatus.CANCELLED;
     await this.roomRepo.save(room);
 
-    // Send cancellation notification to all participants
-    try {
-      const participants = await this.participantRepo.find({
-        where: { room: { id: roomId } },
-        relations: ['student', 'student.user']
-      });
-
-      const userIds = [
-        room.teacher.userId,
-        ...participants.map(p => p.student.userId)
-      ];
-
-      await this.notificationService.sendRoomCancelledNotification(
-        roomId,
-        room.title,
-        userIds
-      );
-    } catch (error) {
-      console.error('Failed to send room cancellation notifications:', error);
-    }
+    // Note: Room cancellation notifications have been removed as requested
+    // The room is still cancelled, but no notification is sent
+    console.log(`Room ${roomId} has been cancelled without sending notifications`);
   }
 } 

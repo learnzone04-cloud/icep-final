@@ -70,8 +70,8 @@ let LiveKitService = class LiveKitService {
                         relations: ['student', 'student.user']
                     });
                     if (enrolledStudents.length > 0) {
-                        const studentUserIds = enrolledStudents.map(p => p.student.userId);
-                        await this.notificationService.sendRoomStartingNotification(roomId, room.title, room.startTime, studentUserIds);
+                        const studentIds = enrolledStudents.map(p => p.student.id);
+                        await this.notificationService.sendRoomStartingNotification(roomId, room.title, room.startTime, studentIds, room.teacher.id);
                     }
                 }
                 catch (error) {
@@ -182,20 +182,7 @@ let LiveKitService = class LiveKitService {
             throw new common_1.BadRequestException('Room not found');
         room.status = ConversationRoom_1.ConversationRoomStatus.CANCELLED;
         await this.roomRepo.save(room);
-        try {
-            const participants = await this.participantRepo.find({
-                where: { room: { id: roomId } },
-                relations: ['student', 'student.user']
-            });
-            const userIds = [
-                room.teacher.userId,
-                ...participants.map(p => p.student.userId)
-            ];
-            await this.notificationService.sendRoomCancelledNotification(roomId, room.title, userIds);
-        }
-        catch (error) {
-            console.error('Failed to send room cancellation notifications:', error);
-        }
+        console.log(`Room ${roomId} has been cancelled without sending notifications`);
     }
 };
 exports.LiveKitService = LiveKitService;

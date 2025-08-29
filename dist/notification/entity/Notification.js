@@ -17,7 +17,6 @@ var NotificationType;
     NotificationType["ROOM_CREATED"] = "room_created";
     NotificationType["ROOM_ENROLLMENT"] = "room_enrollment";
     NotificationType["ROOM_STARTING"] = "room_starting";
-    NotificationType["ROOM_CANCELLED"] = "room_cancelled";
     NotificationType["ROOM_COMPLETED"] = "room_completed";
     NotificationType["MESSAGE_RECEIVED"] = "message_received";
     NotificationType["PAYMENT_SUCCESS"] = "payment_success";

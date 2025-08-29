@@ -5,7 +5,6 @@ export enum NotificationType {
   ROOM_CREATED = 'room_created',
   ROOM_ENROLLMENT = 'room_enrollment',
   ROOM_STARTING = 'room_starting',
-  ROOM_CANCELLED = 'room_cancelled',
   ROOM_COMPLETED = 'room_completed',
   MESSAGE_RECEIVED = 'message_received',
   PAYMENT_SUCCESS = 'payment_success',

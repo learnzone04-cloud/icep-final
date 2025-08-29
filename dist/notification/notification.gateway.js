@@ -45,29 +45,37 @@ let NotificationGateway = NotificationGateway_1 = class NotificationGateway {
         });
     }
     async handleConnection(socket) {
-        const userId = socket.data.user?.id;
-        if (userId) {
-            this.connectedUsers.set(userId, {
-                userId,
-                socketId: socket.id
+        const user = socket.data.user;
+        if (user?.id) {
+            this.connectedUsers.set(user.id, {
+                userId: user.id,
+                socketId: socket.id,
+                role: user.role,
+                studentId: user.studentId,
+                teacherId: user.teacherId
             });
-            this.logger.log(`User ${userId} connected to notifications`);
+            this.logger.log(`User ${user.id} (${user.role}) connected to notifications`);
         }
     }
     async handleDisconnect(socket) {
-        const userId = socket.data.user?.id;
-        if (userId) {
-            this.connectedUsers.delete(userId);
-            this.logger.log(`User ${userId} disconnected from notifications`);
+        const user = socket.data.user;
+        if (user?.id) {
+            this.connectedUsers.delete(user.id);
+            this.logger.log(`User ${user.id} disconnected from notifications`);
         }
     }
     handleSubscribe(socket) {
-        const userId = socket.data.user.id;
-        socket.emit('subscribed', { userId });
-        this.logger.log(`User ${userId} subscribed to notifications`);
+        const user = socket.data.user;
+        socket.emit('subscribed', {
+            userId: user.id,
+            role: user.role,
+            studentId: user.studentId,
+            teacherId: user.teacherId
+        });
+        this.logger.log(`User ${user.id} (${user.role}) subscribed to notifications`);
     }
     async handleGetUnreadCount(socket) {
-        const userId = socket.data.user.id;
+        const user = socket.data.user;
         socket.emit('unreadCount', { count: 0 });
     }
     sendNotificationToUser(userId, notification) {

@@ -20,29 +20,39 @@ let NotificationController = class NotificationController {
     constructor(notificationService) {
         this.notificationService = notificationService;
     }
+    getUserIdFromToken(req) {
+        const user = req.user;
+        if (user.role === 'Student' && user.studentId) {
+            return user.id;
+        }
+        if (user.role === 'Teacher' && user.teacherId) {
+            return user.id;
+        }
+        return user.id;
+    }
     async getUserNotifications(req, limit, offset) {
-        const userId = req.user.id;
+        const userId = this.getUserIdFromToken(req);
         const limitNum = limit ? parseInt(limit) : 20;
         const offsetNum = offset ? parseInt(offset) : 0;
         return this.notificationService.getUserNotifications(userId, limitNum, offsetNum);
     }
     async getUnreadCount(req) {
-        const userId = req.user.id;
+        const userId = this.getUserIdFromToken(req);
         const count = await this.notificationService.getUnreadCount(userId);
         return { count };
     }
     async markAsRead(id, req) {
-        const userId = req.user.id;
+        const userId = this.getUserIdFromToken(req);
         await this.notificationService.markAsRead(parseInt(id), userId);
         return { success: true };
     }
     async markAllAsRead(req) {
-        const userId = req.user.id;
+        const userId = this.getUserIdFromToken(req);
         await this.notificationService.markAllAsRead(userId);
         return { success: true };
     }
     async deleteNotification(id, req) {
-        const userId = req.user.id;
+        const userId = this.getUserIdFromToken(req);
         await this.notificationService.deleteNotification(parseInt(id), userId);
         return { success: true };
     }
