@@ -1,0 +1,93 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ArticleLikeController = void 0;
+const common_1 = require("@nestjs/common");
+const article_like_service_1 = require("./article-like.service");
+const jwt_auth_guard_1 = require("../auth/jwt-auth.guard");
+let ArticleLikeController = class ArticleLikeController {
+    constructor(service) {
+        this.service = service;
+    }
+    toggleArticleLike(req, id) {
+        return this.service.toggleArticleLike(id, req.user.id);
+    }
+    checkUserLikeStatus(req, id) {
+        return this.service.checkUserLikeStatus(id, req.user.id);
+    }
+    getArticleLikeCount(id) {
+        return this.service.getArticleLikeCount(id);
+    }
+    getArticleLikeOne(id) {
+        return this.service.findArticleOneLike(id);
+    }
+    getArticleLikes() {
+        return this.service.find();
+    }
+    deleteLike(id) {
+        return this.service.delete(id);
+    }
+};
+exports.ArticleLikeController = ArticleLikeController;
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Post)('/:id'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Object)
+], ArticleLikeController.prototype, "toggleArticleLike", null);
+__decorate([
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.Get)('/:id/status'),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Number]),
+    __metadata("design:returntype", Object)
+], ArticleLikeController.prototype, "checkUserLikeStatus", null);
+__decorate([
+    (0, common_1.Get)('/:id/count'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", Object)
+], ArticleLikeController.prototype, "getArticleLikeCount", null);
+__decorate([
+    (0, common_1.Get)('/:id'),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], ArticleLikeController.prototype, "getArticleLikeOne", null);
+__decorate([
+    (0, common_1.Get)(),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], ArticleLikeController.prototype, "getArticleLikes", null);
+__decorate([
+    (0, common_1.Delete)('/:id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id', common_1.ParseIntPipe)),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Number]),
+    __metadata("design:returntype", void 0)
+], ArticleLikeController.prototype, "deleteLike", null);
+exports.ArticleLikeController = ArticleLikeController = __decorate([
+    (0, common_1.Controller)('article-like'),
+    __metadata("design:paramtypes", [article_like_service_1.ArticleLikeService])
+], ArticleLikeController);
+//# sourceMappingURL=article-like.controller.js.map

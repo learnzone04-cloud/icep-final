@@ -1,0 +1,30 @@
+import { CertificateEntity } from 'src/certificate/entities/certificate.entity';
+import { Course } from 'src/course/entities/course.entity';
+import { Follower } from 'src/follower/entities/follower.entity';
+import { TypeEntity } from 'src/types/entity/Type';
+import { UserEntity } from 'src/users/entity/User';
+import { ConversationRoom } from '../../conversation-room/entity/ConversationRoom';
+import { Story } from '../../story/entity/Story';
+import { Rate } from 'src/rate/entities/rate.entity';
+import { Discount } from 'src/discounts/entities/discount.entity';
+import { Coupon } from 'src/discounts/entities/coupon.entity';
+export declare class TeacherEntity {
+    id: number;
+    facebookUrl: string;
+    instagramUrl: string;
+    certificate: CertificateEntity;
+    coverLetter: string;
+    cv: string;
+    userId: number;
+    typeId: number;
+    user: UserEntity;
+    type: TypeEntity;
+    followers: Follower[];
+    course: Course[];
+    conversationRooms: ConversationRoom[];
+    stories: Story[];
+    rates: Rate[];
+    discounts: Discount[];
+    coupons: Coupon[];
+    createdAt: Date;
+}
