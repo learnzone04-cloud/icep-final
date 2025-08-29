@@ -138,7 +138,7 @@ export class ConversationRoomParticipantService {
         
         // Send payment success notification to student
         await this.notificationService.sendPaymentSuccessNotification(
-          studentWithUser.userId,
+          studentId,  // Pass studentId, not userId
           room.price,
           room.title
         );
