@@ -192,12 +192,19 @@ let NotificationService = class NotificationService {
         }
     }
     async getUserByTeacherId(teacherId) {
-        return this.notificationRepo.manager
-            .createQueryBuilder()
-            .select('t.userId')
-            .from('teacher', 't')
-            .where('t.id = :teacherId', { teacherId })
-            .getRawOne();
+        try {
+            const teacher = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('t.userId', 'userId')
+                .from('teachers', 't')
+                .where('t.id = :teacherId', { teacherId })
+                .getRawOne();
+            return teacher?.userId || null;
+        }
+        catch (error) {
+            console.error('❌ Error in getUserByTeacherId:', error);
+            return null;
+        }
     }
     async getUserNotifications(userId, limit = 20, offset = 0) {
         return this.notificationRepo.find({
