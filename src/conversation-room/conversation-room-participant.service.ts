@@ -113,7 +113,7 @@ export class ConversationRoomParticipantService {
       const studentWithUser = await this.participantRepo.manager
         .createQueryBuilder()
         .select('s.*, u.fName, u.lName, u.id as userId')
-        .from('students', 's')
+        .from('student', 's')
         .innerJoin('users', 'u', 'u.id = s.userId')
         .where('s.id = :studentId', { studentId })
         .getRawOne();
