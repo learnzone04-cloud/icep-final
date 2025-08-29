@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './users/entity/User';
@@ -103,14 +103,33 @@ import { Tag } from './tags/entities/Tag';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      database: 'railway',
-      port: 3306,
-      host: 'mysql.railway.internal',
-      username: 'root',
-      password: 'nRaViaggQXZFHCJLVUFbsunQVMclcLGA',
-      entities: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        type: 'mysql',
+        host:
+          configService.get<string>('MYSQLHOST') ||
+          configService.get<string>('DB_HOST') ||
+          'localhost',
+        port: parseInt(
+          (configService.get<string>('MYSQLPORT') ||
+            configService.get<string>('DB_PORT') ||
+            '3306') as string,
+          10,
+        ),
+        username:
+          configService.get<string>('MYSQLUSER') ||
+          configService.get<string>('DB_USERNAME') ||
+          'root',
+        password:
+          configService.get<string>('MYSQLPASSWORD') ||
+          configService.get<string>('DB_PASSWORD') ||
+          '',
+        database:
+          configService.get<string>('MYSQLDATABASE') ||
+          configService.get<string>('DB_DATABASE') ||
+          'railway',
+        entities: [
         UserEntity,
         TeacherEntity,
         TypeEntity,
@@ -158,8 +177,10 @@ import { Tag } from './tags/entities/Tag';
         UserRecommendation,
         UserTagPreference,
         Tag,
-      ],
-      synchronize: true,
+        ],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),
     UsersModule,
