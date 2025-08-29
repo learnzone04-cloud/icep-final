@@ -98,7 +98,7 @@ let NotificationService = class NotificationService {
     async sendReelCreatedNotification(teacherId, teacherName, reelId, reelDescription) {
         const followers = await this.getTeacherFollowers(teacherId);
         for (const follower of followers) {
-            const student = await this.getUserByStudentId(follower.studentId);
+            const student = await this.getUserByStudentId(follower.f_studentId);
             if (student) {
                 await this.createNotification(student.userId, Notification_1.NotificationType.REEL_CREATED, 'New Reel Available', `${teacherName} just posted a new reel: "${reelDescription}"`, { teacherId, teacherName, reelId, reelDescription });
             }
@@ -115,7 +115,7 @@ let NotificationService = class NotificationService {
         }
         for (const follower of followers) {
             console.log('👤 Processing follower:', follower);
-            const student = await this.getUserByStudentId(follower.studentId);
+            const student = await this.getUserByStudentId(follower.f_studentId);
             console.log('🎓 Found student:', student);
             if (student) {
                 try {
@@ -135,7 +135,7 @@ let NotificationService = class NotificationService {
         const followers = await this.getTeacherFollowers(teacherId);
         const snippet = (videoDescription || '').slice(0, 40);
         for (const follower of followers) {
-            const student = await this.getUserByStudentId(follower.studentId);
+            const student = await this.getUserByStudentId(follower.f_studentId);
             if (student) {
                 await this.createNotification(student.userId, Notification_1.NotificationType.SHORT_VIDEO_CREATED, 'New Short Video Available', `${teacherName} just uploaded a new short video: "${snippet}..."`, { teacherId, teacherName, videoId });
             }
@@ -144,7 +144,7 @@ let NotificationService = class NotificationService {
     async sendCourseCreatedNotification(teacherId, teacherName, courseId, courseTitle) {
         const followers = await this.getTeacherFollowers(teacherId);
         for (const follower of followers) {
-            const student = await this.getUserByStudentId(follower.studentId);
+            const student = await this.getUserByStudentId(follower.f_studentId);
             if (student) {
                 await this.createNotification(student.userId, Notification_1.NotificationType.COURSE_CREATED, 'New Course Available', `${teacherName} just created a new course: "${courseTitle}"`, { teacherId, teacherName, courseId });
             }
@@ -168,12 +168,34 @@ let NotificationService = class NotificationService {
         }
     }
     async getUserByStudentId(studentId) {
-        return this.notificationRepo.manager
-            .createQueryBuilder()
-            .select('s.userId')
-            .from('student', 's')
-            .where('s.id = :studentId', { studentId })
-            .getRawOne();
+        console.log('🔍 getUserByStudentId called with studentId:', studentId);
+        try {
+            const allStudents = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('s.id, s.userId')
+                .from('student', 's')
+                .getRawMany();
+            console.log('🔍 All students in database:', allStudents);
+            const student = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('s.userId')
+                .from('student', 's')
+                .where('s.id = :studentId', { studentId })
+                .getRawOne();
+            console.log('🔍 getUserByStudentId query result for studentId', studentId, ':', student);
+            const studentExists = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('s.id')
+                .from('student', 's')
+                .where('s.id = :studentId', { studentId })
+                .getRawOne();
+            console.log('🔍 Student with id', studentId, 'exists:', !!studentExists);
+            return student;
+        }
+        catch (error) {
+            console.error('❌ Error in getUserByStudentId:', error);
+            return null;
+        }
     }
     async getUserByTeacherId(teacherId) {
         return this.notificationRepo.manager

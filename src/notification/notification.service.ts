@@ -155,7 +155,7 @@ export class NotificationService {
     const followers = await this.getTeacherFollowers(teacherId);
     
     for (const follower of followers) {
-      const student = await this.getUserByStudentId(follower.studentId);
+      const student = await this.getUserByStudentId(follower.f_studentId);
       if (student) {
         await this.createNotification(
           student.userId,
@@ -183,7 +183,7 @@ export class NotificationService {
     
     for (const follower of followers) {
       console.log('👤 Processing follower:', follower);
-      const student = await this.getUserByStudentId(follower.studentId);
+      const student = await this.getUserByStudentId(follower.f_studentId);
       console.log('🎓 Found student:', student);
       
       if (student) {
@@ -210,7 +210,7 @@ export class NotificationService {
     const snippet = (videoDescription || '').slice(0, 40);
     
     for (const follower of followers) {
-      const student = await this.getUserByStudentId(follower.studentId);
+      const student = await this.getUserByStudentId(follower.f_studentId);
       if (student) {
         await this.createNotification(
           student.userId,
@@ -227,7 +227,7 @@ export class NotificationService {
     const followers = await this.getTeacherFollowers(teacherId);
     
     for (const follower of followers) {
-      const student = await this.getUserByStudentId(follower.studentId);
+      const student = await this.getUserByStudentId(follower.f_studentId);
       if (student) {
         await this.createNotification(
           student.userId,
@@ -260,12 +260,43 @@ export class NotificationService {
   }
 
   private async getUserByStudentId(studentId: number): Promise<any> {
-    return this.notificationRepo.manager
-      .createQueryBuilder()
-      .select('s.userId')
-      .from('student', 's')
-      .where('s.id = :studentId', { studentId })
-      .getRawOne();
+    console.log('🔍 getUserByStudentId called with studentId:', studentId);
+    
+    try {
+      // First, let's see what's in the student table
+      const allStudents = await this.notificationRepo.manager
+        .createQueryBuilder()
+        .select('s.id, s.userId')
+        .from('student', 's')
+        .getRawMany();
+      
+      console.log('🔍 All students in database:', allStudents);
+      
+      // Now search for our specific student
+      const student = await this.notificationRepo.manager
+        .createQueryBuilder()
+        .select('s.userId')
+        .from('student', 's')
+        .where('s.id = :studentId', { studentId })
+        .getRawOne();
+      
+      console.log('🔍 getUserByStudentId query result for studentId', studentId, ':', student);
+      
+      // Also check if the student exists at all
+      const studentExists = await this.notificationRepo.manager
+        .createQueryBuilder()
+        .select('s.id')
+        .from('student', 's')
+        .where('s.id = :studentId', { studentId })
+        .getRawOne();
+      
+      console.log('🔍 Student with id', studentId, 'exists:', !!studentExists);
+      
+      return student;
+    } catch (error) {
+      console.error('❌ Error in getUserByStudentId:', error);
+      return null;
+    }
   }
 
   private async getUserByTeacherId(teacherId: number): Promise<any> {
