@@ -61,38 +61,38 @@ let NotificationService = class NotificationService {
         for (const studentId of studentIds) {
             const student = await this.getUserByStudentId(studentId);
             if (student) {
-                await this.createNotification(student.userId, Notification_1.NotificationType.ROOM_CREATED, 'New Conversation Room Available', `A new room "${roomTitle}" by ${teacherName} is now available for enrollment.`, { roomId, roomTitle, teacherName });
+                await this.createNotification(student, Notification_1.NotificationType.ROOM_CREATED, 'New Conversation Room Available', `A new room "${roomTitle}" by ${teacherName} is now available for enrollment.`, { roomId, roomTitle, teacherName });
             }
         }
     }
     async sendRoomEnrollmentNotification(roomId, roomTitle, studentName, teacherId) {
         const teacher = await this.getUserByTeacherId(teacherId);
         if (teacher) {
-            await this.createNotification(teacher.userId, Notification_1.NotificationType.ROOM_ENROLLMENT, 'New Student Enrollment', `${studentName} has enrolled in your room "${roomTitle}".`, { roomId, roomTitle, studentName });
+            await this.createNotification(teacher, Notification_1.NotificationType.ROOM_ENROLLMENT, 'New Student Enrollment', `${studentName} has enrolled in your room "${roomTitle}".`, { roomId, roomTitle, studentName });
         }
     }
     async sendRoomStartingNotification(roomId, roomTitle, startTime, studentIds, teacherId) {
         for (const studentId of studentIds) {
             const student = await this.getUserByStudentId(studentId);
             if (student) {
-                await this.createNotification(student.userId, Notification_1.NotificationType.ROOM_STARTING, 'Room Starting Soon', `Your conversation room "${roomTitle}" starts in 15 minutes.`, { roomId, roomTitle, startTime });
+                await this.createNotification(student, Notification_1.NotificationType.ROOM_STARTING, 'Room Starting Soon', `Your conversation room "${roomTitle}" starts in 15 minutes.`, { roomId, roomTitle, startTime });
             }
         }
         const teacher = await this.getUserByTeacherId(teacherId);
         if (teacher) {
-            await this.createNotification(teacher.userId, Notification_1.NotificationType.ROOM_STARTING, 'Room Starting Soon', `Your conversation room "${roomTitle}" starts in 15 minutes.`, { roomId, roomTitle, startTime });
+            await this.createNotification(teacher, Notification_1.NotificationType.ROOM_STARTING, 'Room Starting Soon', `Your conversation room "${roomTitle}" starts in 15 minutes.`, { roomId, roomTitle, startTime });
         }
     }
     async sendPaymentSuccessNotification(studentId, amount, roomTitle) {
         const student = await this.getUserByStudentId(studentId);
         if (student) {
-            await this.createNotification(student.userId, Notification_1.NotificationType.PAYMENT_SUCCESS, 'Payment Successful', `Payment of $${amount} for "${roomTitle}" was successful.`, { amount, roomTitle });
+            await this.createNotification(student, Notification_1.NotificationType.PAYMENT_SUCCESS, 'Payment Successful', `Payment of $${amount} for "${roomTitle}" was successful.`, { amount, roomTitle });
         }
     }
     async sendPaymentFailedNotification(studentId, amount, roomTitle) {
         const student = await this.getUserByStudentId(studentId);
         if (student) {
-            await this.createNotification(student.userId, Notification_1.NotificationType.PAYMENT_FAILED, 'Payment Failed', `Payment of $${amount} for "${roomTitle}" failed. Please try again.`, { amount, roomTitle });
+            await this.createNotification(student, Notification_1.NotificationType.PAYMENT_FAILED, 'Payment Failed', `Payment of $${amount} for "${roomTitle}" failed. Please try again.`, { amount, roomTitle });
         }
     }
     async sendReelCreatedNotification(teacherId, teacherName, reelId, reelDescription) {
@@ -100,7 +100,7 @@ let NotificationService = class NotificationService {
         for (const follower of followers) {
             const student = await this.getUserByStudentId(follower.f_studentId);
             if (student) {
-                await this.createNotification(student.userId, Notification_1.NotificationType.REEL_CREATED, 'New Reel Available', `${teacherName} just posted a new reel: "${reelDescription}"`, { teacherId, teacherName, reelId, reelDescription });
+                await this.createNotification(student, Notification_1.NotificationType.REEL_CREATED, 'New Reel Available', `${teacherName} just posted a new reel: "${reelDescription}"`, { teacherId, teacherName, reelId, reelDescription });
             }
         }
     }
@@ -119,11 +119,11 @@ let NotificationService = class NotificationService {
             console.log('🎓 Found student:', student);
             if (student) {
                 try {
-                    await this.createNotification(student.userId, Notification_1.NotificationType.ARTICLE_CREATED, 'New Article Available', `${teacherName} just published a new article: "${snippet}..."`, { teacherId, teacherName, articleId });
-                    console.log('✅ Notification created for student:', student.userId);
+                    await this.createNotification(student, Notification_1.NotificationType.ARTICLE_CREATED, 'New Article Available', `${teacherName} just published a new article: "${snippet}..."`, { teacherId, teacherName, articleId });
+                    console.log('✅ Notification created for student:', student);
                 }
                 catch (error) {
-                    console.error('❌ Failed to create notification for student:', student.userId, error);
+                    console.error('❌ Failed to create notification for student:', student, error);
                 }
             }
             else {
@@ -137,7 +137,7 @@ let NotificationService = class NotificationService {
         for (const follower of followers) {
             const student = await this.getUserByStudentId(follower.f_studentId);
             if (student) {
-                await this.createNotification(student.userId, Notification_1.NotificationType.SHORT_VIDEO_CREATED, 'New Short Video Available', `${teacherName} just uploaded a new short video: "${snippet}..."`, { teacherId, teacherName, videoId });
+                await this.createNotification(student, Notification_1.NotificationType.SHORT_VIDEO_CREATED, 'New Short Video Available', `${teacherName} just uploaded a new short video: "${snippet}..."`, { teacherId, teacherName, videoId });
             }
         }
     }
@@ -146,7 +146,7 @@ let NotificationService = class NotificationService {
         for (const follower of followers) {
             const student = await this.getUserByStudentId(follower.f_studentId);
             if (student) {
-                await this.createNotification(student.userId, Notification_1.NotificationType.COURSE_CREATED, 'New Course Available', `${teacherName} just created a new course: "${courseTitle}"`, { teacherId, teacherName, courseId });
+                await this.createNotification(student, Notification_1.NotificationType.COURSE_CREATED, 'New Course Available', `${teacherName} just created a new course: "${courseTitle}"`, { teacherId, teacherName, courseId });
             }
         }
     }
@@ -172,30 +172,22 @@ let NotificationService = class NotificationService {
         try {
             const student = await this.notificationRepo.manager
                 .createQueryBuilder()
-                .select('s.userId')
+                .select('s.userId', 'userId')
                 .from('student', 's')
                 .where('s.id = :studentId', { studentId })
                 .getRawOne();
-            console.log('🔍 getUserByStudentId query result for studentId', studentId, ':', student);
-            const studentExists = await this.notificationRepo.manager
-                .createQueryBuilder()
-                .select('s.id')
-                .from('student', 's')
-                .where('s.id = :studentId', { studentId })
-                .getRawOne();
-            console.log('🔍 Student with id', studentId, 'exists:', !!studentExists);
-            const fullStudent = await this.notificationRepo.manager
-                .createQueryBuilder()
-                .select('*')
-                .from('student', 's')
-                .where('s.id = :studentId', { studentId })
-                .getRawOne();
-            console.log('🔍 Full student record:', fullStudent);
-            return student;
+            console.log('🔍 getUserByStudentId query result:', student);
+            if (student?.userId) {
+                console.log('✅ Student found with userId:', student.userId);
+                return student.userId;
+            }
+            else {
+                console.log('❌ Student not found or missing userId:', student);
+                return null;
+            }
         }
         catch (error) {
             console.error('❌ Error in getUserByStudentId:', error);
-            console.error('❌ Error details:', error.message);
             return null;
         }
     }

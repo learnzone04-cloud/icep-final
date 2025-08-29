@@ -72,7 +72,7 @@ export class NotificationService {
       const student = await this.getUserByStudentId(studentId);
       if (student) {
         await this.createNotification(
-          student.userId,
+          student,
           NotificationType.ROOM_CREATED,
           'New Conversation Room Available',
           `A new room "${roomTitle}" by ${teacherName} is now available for enrollment.`,
@@ -87,7 +87,7 @@ export class NotificationService {
     const teacher = await this.getUserByTeacherId(teacherId);
     if (teacher) {
       await this.createNotification(
-        teacher.userId,
+        teacher,
         NotificationType.ROOM_ENROLLMENT,
         'New Student Enrollment',
         `${studentName} has enrolled in your room "${roomTitle}".`,
@@ -102,7 +102,7 @@ export class NotificationService {
       const student = await this.getUserByStudentId(studentId);
       if (student) {
         await this.createNotification(
-          student.userId,
+          student,
           NotificationType.ROOM_STARTING,
           'Room Starting Soon',
           `Your conversation room "${roomTitle}" starts in 15 minutes.`,
@@ -115,7 +115,7 @@ export class NotificationService {
     const teacher = await this.getUserByTeacherId(teacherId);
     if (teacher) {
       await this.createNotification(
-        teacher.userId,
+        teacher,
         NotificationType.ROOM_STARTING,
         'Room Starting Soon',
         `Your conversation room "${roomTitle}" starts in 15 minutes.`,
@@ -128,7 +128,7 @@ export class NotificationService {
     const student = await this.getUserByStudentId(studentId);
     if (student) {
       await this.createNotification(
-        student.userId,
+        student,
         NotificationType.PAYMENT_SUCCESS,
         'Payment Successful',
         `Payment of $${amount} for "${roomTitle}" was successful.`,
@@ -141,7 +141,7 @@ export class NotificationService {
     const student = await this.getUserByStudentId(studentId);
     if (student) {
       await this.createNotification(
-        student.userId,
+        student,
         NotificationType.PAYMENT_FAILED,
         'Payment Failed',
         `Payment of $${amount} for "${roomTitle}" failed. Please try again.`,
@@ -158,7 +158,7 @@ export class NotificationService {
       const student = await this.getUserByStudentId(follower.f_studentId);
       if (student) {
         await this.createNotification(
-          student.userId,
+          student,
           NotificationType.REEL_CREATED,
           'New Reel Available',
           `${teacherName} just posted a new reel: "${reelDescription}"`,
@@ -189,15 +189,15 @@ export class NotificationService {
       if (student) {
         try {
           await this.createNotification(
-            student.userId,
+            student,
             NotificationType.ARTICLE_CREATED,
             'New Article Available',
             `${teacherName} just published a new article: "${snippet}..."`,
             { teacherId, teacherName, articleId }
           );
-          console.log('✅ Notification created for student:', student.userId);
+          console.log('✅ Notification created for student:', student);
         } catch (error) {
-          console.error('❌ Failed to create notification for student:', student.userId, error);
+          console.error('❌ Failed to create notification for student:', student, error);
         }
       } else {
         console.log('⚠️ Student not found for follower:', follower);
@@ -213,7 +213,7 @@ export class NotificationService {
       const student = await this.getUserByStudentId(follower.f_studentId);
       if (student) {
         await this.createNotification(
-          student.userId,
+          student,
           NotificationType.SHORT_VIDEO_CREATED,
           'New Short Video Available',
           `${teacherName} just uploaded a new short video: "${snippet}..."`,
@@ -230,7 +230,7 @@ export class NotificationService {
       const student = await this.getUserByStudentId(follower.f_studentId);
       if (student) {
         await this.createNotification(
-          student.userId,
+          student,
           NotificationType.COURSE_CREATED,
           'New Course Available',
           `${teacherName} just created a new course: "${courseTitle}"`,
@@ -259,44 +259,29 @@ export class NotificationService {
     }
   }
 
-  private async getUserByStudentId(studentId: number): Promise<any> {
+  private async getUserByStudentId(studentId: number): Promise<number | null> {
     console.log('🔍 getUserByStudentId called with studentId:', studentId);
     
     try {
-      // Simple query: get userId from student table where id = studentId
+      // Explicitly alias the column to get { userId: 4 } instead of { s_userId: 4 }
       const student = await this.notificationRepo.manager
         .createQueryBuilder()
-        .select('s.userId')
+        .select('s.userId', 'userId')
         .from('student', 's')
         .where('s.id = :studentId', { studentId })
         .getRawOne();
       
-      console.log('🔍 getUserByStudentId query result for studentId', studentId, ':', student);
+      console.log('🔍 getUserByStudentId query result:', student);
       
-      // Also check if the student exists at all
-      const studentExists = await this.notificationRepo.manager
-        .createQueryBuilder()
-        .select('s.id')
-        .from('student', 's')
-        .where('s.id = :studentId', { studentId })
-        .getRawOne();
-      
-      console.log('🔍 Student with id', studentId, 'exists:', !!studentExists);
-      
-      // Get full student record for debugging
-      const fullStudent = await this.notificationRepo.manager
-        .createQueryBuilder()
-        .select('*')
-        .from('student', 's')
-        .where('s.id = :studentId', { studentId })
-        .getRawOne();
-      
-      console.log('🔍 Full student record:', fullStudent);
-      
-      return student;
+      if (student?.userId) {
+        console.log('✅ Student found with userId:', student.userId);
+        return student.userId; // Return just the number
+      } else {
+        console.log('❌ Student not found or missing userId:', student);
+        return null;
+      }
     } catch (error) {
       console.error('❌ Error in getUserByStudentId:', error);
-      console.error('❌ Error details:', error.message);
       return null;
     }
   }
