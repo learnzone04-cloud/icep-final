@@ -263,12 +263,33 @@ export class NotificationService {
     console.log('🔍 getUserByStudentId called with studentId:', studentId);
     
     try {
-      // First, let's see what tables exist in the database
+      // Test basic database connection
+      console.log('🔍 Testing database connection...');
+      
+      // Try a simple query to see what database we're in (MySQL syntax)
+      const dbInfo = await this.notificationRepo.manager
+        .createQueryBuilder()
+        .select('DATABASE() as db_name, SCHEMA() as schema_name')
+        .getRawOne();
+      
+      console.log('🔍 Database info:', dbInfo);
+      
+      // Try to get table count (MySQL syntax)
+      const tableCount = await this.notificationRepo.manager
+        .createQueryBuilder()
+        .select('COUNT(*) as count')
+        .from('information_schema.tables', 't')
+        .where('t.table_schema = DATABASE()')
+        .getRawOne();
+      
+      console.log('🔍 Total table count:', tableCount);
+      
+      // Get all tables in current database (MySQL syntax)
       const allTables = await this.notificationRepo.manager
         .createQueryBuilder()
         .select('table_name')
         .from('information_schema.tables', 't')
-        .where('t.table_schema = :schema', { schema: 'public' })
+        .where('t.table_schema = DATABASE()')
         .getRawMany();
       
       console.log('🔍 All tables in database:', allTables.map(t => t.table_name));
@@ -279,6 +300,26 @@ export class NotificationService {
       
       if (!studentTableExists) {
         console.log('❌ Student table not found! Available tables:', allTables.map(t => t.table_name));
+        
+        // Try different schemas
+        const allSchemas = await this.notificationRepo.manager
+          .createQueryBuilder()
+          .select('DISTINCT table_schema')
+          .from('information_schema.tables', 't')
+          .getRawMany();
+        
+        console.log('🔍 Available schemas:', allSchemas.map(s => s.table_schema));
+        
+        // Try to find student table in any schema
+        const studentTableAnySchema = await this.notificationRepo.manager
+          .createQueryBuilder()
+          .select('table_name, table_schema')
+          .from('information_schema.tables', 't')
+          .where('t.table_name LIKE :tableName', { tableName: '%student%' })
+          .getRawMany();
+        
+        console.log('🔍 Student-like tables found:', studentTableAnySchema);
+        
         return null;
       }
       
@@ -287,7 +328,7 @@ export class NotificationService {
         .createQueryBuilder()
         .select('column_name, data_type')
         .from('information_schema.columns', 'c')
-        .where('c.table_name = :tableName', { tableName: 'student' })
+        .where('c.table_name = :tableName AND c.table_schema = DATABASE()', { tableName: 'student' })
         .getRawMany();
       
       console.log('🔍 Student table columns:', studentColumns);
