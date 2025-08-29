@@ -12,6 +12,27 @@ export class NotificationService {
     private readonly notificationGateway: NotificationGateway,
   ) {}
 
+  // Test method to check if notifications work
+  async testNotification(userId: number): Promise<Notification> {
+    console.log('🧪 testNotification called with userId:', userId);
+    
+    try {
+      const notification = await this.createNotification(
+        userId,
+        NotificationType.ARTICLE_CREATED,
+        'Test Notification',
+        'This is a test notification to check if the system works.',
+        { test: true, timestamp: new Date().toISOString() }
+      );
+      
+      console.log('✅ Test notification created successfully:', notification.id);
+      return notification;
+    } catch (error) {
+      console.error('❌ Test notification failed:', error);
+      throw error;
+    }
+  }
+
   async createNotification(
     userId: number,
     type: NotificationType,
@@ -19,21 +40,30 @@ export class NotificationService {
     message: string,
     data?: any
   ): Promise<Notification> {
-    const notification = this.notificationRepo.create({
-      userId,
-      type,
-      title,
-      message,
-      data,
-      status: NotificationStatus.UNREAD
-    });
+    console.log('📝 createNotification called with:', { userId, type, title, message });
+    
+    try {
+      const notification = this.notificationRepo.create({
+        userId,
+        type,
+        title,
+        message,
+        data,
+        status: NotificationStatus.UNREAD
+      });
 
-    const savedNotification = await this.notificationRepo.save(notification);
-    
-    // Send real-time notification
-    this.notificationGateway.sendNotificationToUser(userId, savedNotification);
-    
-    return savedNotification;
+      const savedNotification = await this.notificationRepo.save(notification);
+      console.log('💾 Notification saved to database:', savedNotification.id);
+      
+      // Send real-time notification
+      this.notificationGateway.sendNotificationToUser(userId, savedNotification);
+      console.log('📡 Real-time notification sent to user:', userId);
+      
+      return savedNotification;
+    } catch (error) {
+      console.error('❌ Error in createNotification:', error);
+      throw error;
+    }
   }
 
   async sendRoomCreatedNotification(roomId: number, roomTitle: string, teacherName: string, studentIds: number[]) {
@@ -139,19 +169,38 @@ export class NotificationService {
   }
 
   async sendArticleCreatedNotification(teacherId: number, teacherName: string, articleId: number, articleContentSnippet: string) {
+    console.log('🔔 sendArticleCreatedNotification called with:', { teacherId, teacherName, articleId });
+    
     const followers = await this.getTeacherFollowers(teacherId);
+    console.log('📱 Found followers:', followers);
+    
     const snippet = (articleContentSnippet || '').slice(0, 40);
     
+    if (followers.length === 0) {
+      console.log('⚠️ No followers found for teacher, no notifications will be sent');
+      return;
+    }
+    
     for (const follower of followers) {
+      console.log('👤 Processing follower:', follower);
       const student = await this.getUserByStudentId(follower.studentId);
+      console.log('🎓 Found student:', student);
+      
       if (student) {
-        await this.createNotification(
-          student.userId,
-          NotificationType.ARTICLE_CREATED,
-          'New Article Available',
-          `${teacherName} just published a new article: "${snippet}..."`,
-          { teacherId, teacherName, articleId }
-        );
+        try {
+          await this.createNotification(
+            student.userId,
+            NotificationType.ARTICLE_CREATED,
+            'New Article Available',
+            `${teacherName} just published a new article: "${snippet}..."`,
+            { teacherId, teacherName, articleId }
+          );
+          console.log('✅ Notification created for student:', student.userId);
+        } catch (error) {
+          console.error('❌ Failed to create notification for student:', student.userId, error);
+        }
+      } else {
+        console.log('⚠️ Student not found for follower:', follower);
       }
     }
   }
@@ -192,12 +241,22 @@ export class NotificationService {
   }
 
   private async getTeacherFollowers(teacherId: number): Promise<any[]> {
-    return this.notificationRepo.manager
-      .createQueryBuilder()
-      .select('f.studentId')
-      .from('follower', 'f')
-      .where('f.teacherId = :teacherId', { teacherId })
-      .getRawMany();
+    console.log('🔍 getTeacherFollowers called with teacherId:', teacherId);
+    
+    try {
+      const followers = await this.notificationRepo.manager
+        .createQueryBuilder()
+        .select('f.studentId')
+        .from('follower', 'f')
+        .where('f.teacherId = :teacherId', { teacherId })
+        .getRawMany();
+      
+      console.log('🔍 Raw followers query result:', followers);
+      return followers;
+    } catch (error) {
+      console.error('❌ Error in getTeacherFollowers:', error);
+      return [];
+    }
   }
 
   private async getUserByStudentId(studentId: number): Promise<any> {

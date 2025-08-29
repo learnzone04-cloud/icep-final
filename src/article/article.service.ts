@@ -19,14 +19,24 @@ export class ArticleService {
   ) {}
 
   async createArticle(id: number, data: CreateArticleDto) {
+    console.log('📝 createArticle called with id:', id, 'data:', data);
+    
     const user = await this.userService.findOneById(id);
+    console.log('👤 User found:', { 
+      id: user?.id, 
+      role: user?.role, 
+      hasTeacher: !!user?.teacher,
+      teacherId: user?.teacher?.id 
+    });
     
     // Check if user is a teacher and has teacher data
     if (!user.teacher) {
+      console.log('❌ User has no teacher record');
       throw new NotFoundException('Only teachers can create articles');
     }
     
     if (!user.teacher.type) {
+      console.log('❌ Teacher has no type assigned');
       throw new NotFoundException('Teacher must have a type assigned');
     }
     
@@ -35,18 +45,23 @@ export class ArticleService {
     article.user = user;
     
     const savedArticle = await this.articleRepo.save(article);
+    console.log('💾 Article saved with ID:', savedArticle.id);
     
     // Send notification to followers
     try {
+      console.log('🔔 Attempting to send notification...');
       const teacherName = `${user.fName} ${user.lName}`;
+      console.log('👨‍🏫 Teacher name:', teacherName, 'Teacher ID:', user.teacher.id);
+      
       await this.notificationService.sendArticleCreatedNotification(
         user.teacher.id,
         teacherName,
         savedArticle.id,
         savedArticle.article
       );
+      console.log('✅ Notification sent successfully');
     } catch (error) {
-      console.error('Failed to send article notification:', error);
+      console.error('❌ Failed to send article notification:', error);
       // Don't fail the article creation if notification fails
     }
     

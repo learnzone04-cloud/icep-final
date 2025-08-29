@@ -5,6 +5,7 @@ export declare class NotificationService {
     private readonly notificationRepo;
     private readonly notificationGateway;
     constructor(notificationRepo: Repository<Notification>, notificationGateway: NotificationGateway);
+    testNotification(userId: number): Promise<Notification>;
     createNotification(userId: number, type: NotificationType, title: string, message: string, data?: any): Promise<Notification>;
     sendRoomCreatedNotification(roomId: number, roomTitle: string, teacherName: string, studentIds: number[]): Promise<void>;
     sendRoomEnrollmentNotification(roomId: number, roomTitle: string, studentName: string, teacherId: number): Promise<void>;

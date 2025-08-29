@@ -77,13 +77,13 @@ export class LiveKitService {
           });
           
           if (enrolledStudents.length > 0) {
-            const studentIds = enrolledStudents.map(p => p.student.id);
+            const studentUserIds = enrolledStudents.map(p => p.student.userId);
             await this.notificationService.sendRoomStartingNotification(
               roomId,
               room.title,
               room.startTime,
-              studentIds,
-              room.teacher.id
+              studentUserIds,
+              room.teacher.userId
             );
           }
         } catch (error) {

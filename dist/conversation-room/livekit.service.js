@@ -70,8 +70,8 @@ let LiveKitService = class LiveKitService {
                         relations: ['student', 'student.user']
                     });
                     if (enrolledStudents.length > 0) {
-                        const studentIds = enrolledStudents.map(p => p.student.id);
-                        await this.notificationService.sendRoomStartingNotification(roomId, room.title, room.startTime, studentIds, room.teacher.id);
+                        const studentUserIds = enrolledStudents.map(p => p.student.userId);
+                        await this.notificationService.sendRoomStartingNotification(roomId, room.title, room.startTime, studentUserIds, room.teacher.userId);
                     }
                 }
                 catch (error) {

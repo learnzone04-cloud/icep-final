@@ -80,18 +80,19 @@ export class ConversationRoomService {
       // Get all students who follow this teacher
       const followers = await this.roomRepo.manager
         .createQueryBuilder()
-        .select('f.studentId')
+        .select('s.userId as studentUserId')
         .from('follower', 'f')
+        .innerJoin('student', 's', 's.id = f.studentId')
         .where('f.teacherId = :teacherId', { teacherId: (data.teacher as any).id })
         .getRawMany();
       
       if (followers.length > 0) {
-        const studentIds = followers.map(f => f.studentId);
+        const studentUserIds = followers.map(f => f.studentUserId);
         await this.notificationService.sendRoomCreatedNotification(
           savedRoom.id,
           savedRoom.title,
           teacherName,
-          studentIds
+          studentUserIds
         );
       }
     } catch (error) {

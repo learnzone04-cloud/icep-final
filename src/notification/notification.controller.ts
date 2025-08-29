@@ -8,6 +8,28 @@ import { Request } from 'express';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
+  @Post('test')
+  async testNotification(@Req() req: Request) {
+    const userId = this.getUserIdFromToken(req);
+    console.log('🧪 Test notification endpoint called for userId:', userId);
+    
+    try {
+      const notification = await this.notificationService.testNotification(userId);
+      return { 
+        success: true, 
+        message: 'Test notification created successfully',
+        notificationId: notification.id 
+      };
+    } catch (error) {
+      console.error('❌ Test notification failed:', error);
+      return { 
+        success: false, 
+        message: 'Test notification failed',
+        error: error.message 
+      };
+    }
+  }
+
   private getUserIdFromToken(req: Request): number {
     const user = req.user as any;
     // For students, use studentId to get userId

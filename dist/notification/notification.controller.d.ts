@@ -3,6 +3,17 @@ import { Request } from 'express';
 export declare class NotificationController {
     private readonly notificationService;
     constructor(notificationService: NotificationService);
+    testNotification(req: Request): Promise<{
+        success: boolean;
+        message: string;
+        notificationId: number;
+        error?: undefined;
+    } | {
+        success: boolean;
+        message: string;
+        error: any;
+        notificationId?: undefined;
+    }>;
     private getUserIdFromToken;
     getUserNotifications(req: Request, limit?: string, offset?: string): Promise<import("./entity/Notification").Notification[]>;
     getUnreadCount(req: Request): Promise<{

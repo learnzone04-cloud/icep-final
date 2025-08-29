@@ -20,6 +20,26 @@ let NotificationController = class NotificationController {
     constructor(notificationService) {
         this.notificationService = notificationService;
     }
+    async testNotification(req) {
+        const userId = this.getUserIdFromToken(req);
+        console.log('🧪 Test notification endpoint called for userId:', userId);
+        try {
+            const notification = await this.notificationService.testNotification(userId);
+            return {
+                success: true,
+                message: 'Test notification created successfully',
+                notificationId: notification.id
+            };
+        }
+        catch (error) {
+            console.error('❌ Test notification failed:', error);
+            return {
+                success: false,
+                message: 'Test notification failed',
+                error: error.message
+            };
+        }
+    }
     getUserIdFromToken(req) {
         const user = req.user;
         if (user.role === 'Student' && user.studentId) {
@@ -58,6 +78,13 @@ let NotificationController = class NotificationController {
     }
 };
 exports.NotificationController = NotificationController;
+__decorate([
+    (0, common_1.Post)('test'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationController.prototype, "testNotification", null);
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Req)()),

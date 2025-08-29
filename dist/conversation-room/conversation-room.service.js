@@ -79,13 +79,14 @@ let ConversationRoomService = class ConversationRoomService {
             const teacherName = `${data.teacher.user?.fName || 'Teacher'} ${data.teacher.user?.lName || ''}`;
             const followers = await this.roomRepo.manager
                 .createQueryBuilder()
-                .select('f.studentId')
+                .select('s.userId as studentUserId')
                 .from('follower', 'f')
+                .innerJoin('student', 's', 's.id = f.studentId')
                 .where('f.teacherId = :teacherId', { teacherId: data.teacher.id })
                 .getRawMany();
             if (followers.length > 0) {
-                const studentIds = followers.map(f => f.studentId);
-                await this.notificationService.sendRoomCreatedNotification(savedRoom.id, savedRoom.title, teacherName, studentIds);
+                const studentUserIds = followers.map(f => f.studentUserId);
+                await this.notificationService.sendRoomCreatedNotification(savedRoom.id, savedRoom.title, teacherName, studentUserIds);
             }
         }
         catch (error) {

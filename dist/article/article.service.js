@@ -28,23 +28,36 @@ let ArticleService = class ArticleService {
         this.recommendationService = recommendationService;
     }
     async createArticle(id, data) {
+        console.log('📝 createArticle called with id:', id, 'data:', data);
         const user = await this.userService.findOneById(id);
+        console.log('👤 User found:', {
+            id: user?.id,
+            role: user?.role,
+            hasTeacher: !!user?.teacher,
+            teacherId: user?.teacher?.id
+        });
         if (!user.teacher) {
+            console.log('❌ User has no teacher record');
             throw new common_1.NotFoundException('Only teachers can create articles');
         }
         if (!user.teacher.type) {
+            console.log('❌ Teacher has no type assigned');
             throw new common_1.NotFoundException('Teacher must have a type assigned');
         }
         const article = this.articleRepo.create(data);
         article.type = user.teacher.type;
         article.user = user;
         const savedArticle = await this.articleRepo.save(article);
+        console.log('💾 Article saved with ID:', savedArticle.id);
         try {
+            console.log('🔔 Attempting to send notification...');
             const teacherName = `${user.fName} ${user.lName}`;
+            console.log('👨‍🏫 Teacher name:', teacherName, 'Teacher ID:', user.teacher.id);
             await this.notificationService.sendArticleCreatedNotification(user.teacher.id, teacherName, savedArticle.id, savedArticle.article);
+            console.log('✅ Notification sent successfully');
         }
         catch (error) {
-            console.error('Failed to send article notification:', error);
+            console.error('❌ Failed to send article notification:', error);
         }
         return savedArticle;
     }
