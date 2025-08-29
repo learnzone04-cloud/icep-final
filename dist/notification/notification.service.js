@@ -170,6 +170,26 @@ let NotificationService = class NotificationService {
     async getUserByStudentId(studentId) {
         console.log('🔍 getUserByStudentId called with studentId:', studentId);
         try {
+            const allTables = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('table_name')
+                .from('information_schema.tables', 't')
+                .where('t.table_schema = :schema', { schema: 'public' })
+                .getRawMany();
+            console.log('🔍 All tables in database:', allTables.map(t => t.table_name));
+            const studentTableExists = allTables.some(t => t.table_name === 'student');
+            console.log('🔍 Student table exists:', studentTableExists);
+            if (!studentTableExists) {
+                console.log('❌ Student table not found! Available tables:', allTables.map(t => t.table_name));
+                return null;
+            }
+            const studentColumns = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('column_name, data_type')
+                .from('information_schema.columns', 'c')
+                .where('c.table_name = :tableName', { tableName: 'student' })
+                .getRawMany();
+            console.log('🔍 Student table columns:', studentColumns);
             const allStudents = await this.notificationRepo.manager
                 .createQueryBuilder()
                 .select('s.id, s.userId')
@@ -190,10 +210,19 @@ let NotificationService = class NotificationService {
                 .where('s.id = :studentId', { studentId })
                 .getRawOne();
             console.log('🔍 Student with id', studentId, 'exists:', !!studentExists);
+            const fullStudent = await this.notificationRepo.manager
+                .createQueryBuilder()
+                .select('*')
+                .from('student', 's')
+                .where('s.id = :studentId', { studentId })
+                .getRawOne();
+            console.log('🔍 Full student record:', fullStudent);
             return student;
         }
         catch (error) {
             console.error('❌ Error in getUserByStudentId:', error);
+            console.error('❌ Error details:', error.message);
+            console.error('❌ Error stack:', error.stack);
             return null;
         }
     }
