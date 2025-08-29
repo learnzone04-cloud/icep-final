@@ -19,10 +19,10 @@ export declare class NotificationController {
     getUnreadCount(req: Request): Promise<{
         count: number;
     }>;
-    markAsRead(id: string, req: Request): Promise<{
+    markAllAsRead(req: Request): Promise<{
         success: boolean;
     }>;
-    markAllAsRead(req: Request): Promise<{
+    markAsRead(id: string, req: Request): Promise<{
         success: boolean;
     }>;
     deleteNotification(id: string, req: Request): Promise<{

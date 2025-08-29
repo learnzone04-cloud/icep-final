@@ -61,14 +61,14 @@ let NotificationController = class NotificationController {
         const count = await this.notificationService.getUnreadCount(userId);
         return { count };
     }
-    async markAsRead(id, req) {
-        const userId = this.getUserIdFromToken(req);
-        await this.notificationService.markAsRead(parseInt(id), userId);
-        return { success: true };
-    }
     async markAllAsRead(req) {
         const userId = this.getUserIdFromToken(req);
         await this.notificationService.markAllAsRead(userId);
+        return { success: true };
+    }
+    async markAsRead(id, req) {
+        const userId = this.getUserIdFromToken(req);
+        await this.notificationService.markAsRead(parseInt(id), userId);
         return { success: true };
     }
     async deleteNotification(id, req) {
@@ -102,6 +102,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], NotificationController.prototype, "getUnreadCount", null);
 __decorate([
+    (0, common_1.Post)('mark-all-read'),
+    __param(0, (0, common_1.Req)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], NotificationController.prototype, "markAllAsRead", null);
+__decorate([
     (0, common_1.Post)(':id/read'),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Req)()),
@@ -109,13 +116,6 @@ __decorate([
     __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], NotificationController.prototype, "markAsRead", null);
-__decorate([
-    (0, common_1.Post)('mark-all-read'),
-    __param(0, (0, common_1.Req)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], NotificationController.prototype, "markAllAsRead", null);
 __decorate([
     (0, common_1.Delete)(':id'),
     __param(0, (0, common_1.Param)('id')),

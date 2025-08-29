@@ -68,17 +68,17 @@ export class NotificationController {
     return { count };
   }
 
-  @Post(':id/read')
-  async markAsRead(@Param('id') id: string, @Req() req: Request) {
-    const userId = this.getUserIdFromToken(req);
-    await this.notificationService.markAsRead(parseInt(id), userId);
-    return { success: true };
-  }
-
   @Post('mark-all-read')
   async markAllAsRead(@Req() req: Request) {
     const userId = this.getUserIdFromToken(req);
     await this.notificationService.markAllAsRead(userId);
+    return { success: true };
+  }
+
+  @Post(':id/read')
+  async markAsRead(@Param('id') id: string, @Req() req: Request) {
+    const userId = this.getUserIdFromToken(req);
+    await this.notificationService.markAsRead(parseInt(id), userId);
     return { success: true };
   }
 
