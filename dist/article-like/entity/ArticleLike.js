@@ -21,7 +21,7 @@ __decorate([
     __metadata("design:type", Number)
 ], ArticleLike.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.Column)({ default: true }),
     __metadata("design:type", Boolean)
 ], ArticleLike.prototype, "isLiked", void 0);
 __decorate([

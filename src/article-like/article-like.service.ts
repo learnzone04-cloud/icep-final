@@ -46,7 +46,8 @@ export class ArticleLikeService {
       // User hasn't liked, so add the like
       const newLike = this.articleLikeRepo.create({
         articleId,
-        studentId: userId
+        studentId: userId,
+        isLiked: true
       });
       
       await this.articleLikeRepo.save(newLike);

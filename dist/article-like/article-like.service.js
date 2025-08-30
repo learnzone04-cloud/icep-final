@@ -49,7 +49,8 @@ let ArticleLikeService = class ArticleLikeService {
         else {
             const newLike = this.articleLikeRepo.create({
                 articleId,
-                studentId: userId
+                studentId: userId,
+                isLiked: true
             });
             await this.articleLikeRepo.save(newLike);
             return {

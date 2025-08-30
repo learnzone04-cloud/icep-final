@@ -14,7 +14,7 @@ export class ArticleLike {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: true })
   isLiked: boolean;
 
   @Column()
